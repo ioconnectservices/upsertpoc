@@ -17,9 +17,9 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 	<batch:job name="batchFlow" block-size="200">
         <batch:threading-profile maxThreadsActive="25" poolExhaustedAction="WAIT"/>
         <batch:input>
-            <!-- <file:inbound-endpoint path="/home/victor/pocs/batch/toProcess/input" moveToDirectory="/home/victor/pocs/batch/toProcess/output" responseTimeout="60000" doc:name="File">
+            <file:inbound-endpoint path="/home/victor/pocs/batch/toProcess/input" moveToDirectory="/home/victor/pocs/batch/toProcess/output" responseTimeout="60000" doc:name="File">
                 <file:filename-regex-filter pattern=".*csv" caseSensitive="true"/>
-            </file:inbound-endpoint> -->
+            </file:inbound-endpoint>
             <dw:transform-message doc:name="Transform Message">
                 <dw:input-payload mimeType="application/csv"/>
                 <dw:set-payload><![CDATA[%dw 1.0
