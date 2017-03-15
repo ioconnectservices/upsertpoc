@@ -23,11 +23,11 @@ public class PaginationCalculator implements Callable {
 		
 		int lines = (int) reader.lines().count();
 		reader.close();
-
-		int numberOfBatches = (lines/batchSize);
+		
+		int numberOfBatches = (lines%batchSize == 0) ? lines/batchSize : lines/batchSize + 1;
 		List<Integer> pages = new ArrayList<>();
-		for (int i=0; i<=numberOfBatches; i++) {
-			pages.add(i * numberOfBatches);
+		for (int i=0; i<numberOfBatches; i++) {
+			pages.add(i);
 		}
 		
 		message.setInvocationProperty("pages", pages);

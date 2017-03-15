@@ -15,15 +15,16 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
     <db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" password="root" database="pocbatch" doc:name="MySQL Configuration"/>
-    <queued-asynchronous-processing-strategy name="Queued_Asynchronous_Processing_Strategy" maxThreads="25" doc:name="Queued Asynchronous Processing Strategy"/>
-    <flow name="newFlow">
+    <asynchronous-processing-strategy name="asyncProcessingStrategy" maxThreads="50" minThreads="15" doc:name="Asynchronous Processing Strategy"/>
+    <flow name="buildingQueryFlow">
     	<file:inbound-endpoint name="File" path="/home/victor/pocs/batch/toProcess/input" moveToDirectory="/home/victor/pocs/batch/toProcess/output" responseTimeout="10000" doc:name="File" mimeType="application/csv" pollingFrequency="10000">
             <file:filename-regex-filter pattern=".*csv" caseSensitive="true"/>
         </file:inbound-endpoint>
-        <set-variable variableName="payloadBkp" value="#[payload]" doc:name="Backup Payload"/>
-        <set-variable variableName="batchSize" value="#[10000]" doc:name="Batch Size"/>
+        <set-variable variableName="newInputStream" value="#[new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(new File(flowVars.originalDirectory, flowVars.originalFilename))))]" doc:name="Create New Stream"/>
+        <set-variable variableName="batchSize" value="#[Integer.parseInt(${batchSize})]" doc:name="Batch Size"/>
         <logger message="Batch Size: #[flowVars.batchSize]" level="INFO" doc:name="Logger"/>
         <set-variable variableName="pages" value="#[new ArrayList()]" doc:name="Pages Variable"/>
         <component class="com.iocs.manual.PaginationCalculator" doc:name="Pagination Calculator"/>
@@ -31,8 +32,12 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
         <foreach collection="#[flowVars.pages]" doc:name="For Each">
             <set-variable variableName="query" value="#[new java.lang.StringBuilder()]" doc:name="Query Variable"/>
             <component class="com.iocs.manual.QueryBuilder" doc:name="Query Builder"/>
-            <db:bulk-execute config-ref="MySQL_Configuration" doc:name="Database"><![CDATA[#[flowVars.query.toString()]]]></db:bulk-execute>
+            <set-payload value="#[flowVars.query.toString()]" doc:name="Set Payload"/>
+            <flow-ref name="databaseUpsertFlow" doc:name="databaseUpsertFlow"/>
         </foreach>
         <logger message="All records were processed" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="databaseUpsertFlow" processingStrategy="asyncProcessingStrategy">
+        <db:bulk-execute config-ref="MySQL_Configuration" doc:name="Database"><![CDATA[#[payload]]]></db:bulk-execute>
     </flow>
 </mule>

@@ -1,39 +1,25 @@
 package com.iocs.manual;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import org.mule.api.MuleEventContext;
 import org.mule.api.MuleMessage;
 import org.mule.api.lifecycle.Callable;
 
 public class QueryBuilder implements Callable {
+	private static final String BREAK_LINE = System.getProperty("line.separator");
 
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
 		MuleMessage message = eventContext.getMessage();
 		
-		String dir = message.getInvocationProperty("moveToDirectory");
-		String filename = message.getInvocationProperty("originalFilename");
-		File file = new File(dir, filename);
-		if (!file.exists()) {
-			throw new FileNotFoundException(file.getAbsolutePath());
-		}
-		
-		InputStream inputStream = new FileInputStream(file);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		BufferedReader reader = message.getInvocationProperty("newInputStream");
 		Integer batchSize = Integer.parseInt(message.getInvocationProperty("batchSize").toString());
-		Long bytes = Long.parseLong(message.getInvocationProperty("bytes", "0").toString());
 		
-		StringBuilder query = new StringBuilder();
+		StringBuilder query = message.getInvocationProperty("query");
 		int current = 0;
 		String line = null;
 		
-		reader.skip(bytes);
 		while((line = reader.readLine()) != null) {
 			String stmt = buildQuery(line);
 			if (stmt == null || stmt.isEmpty()) {
@@ -42,18 +28,14 @@ public class QueryBuilder implements Callable {
 			
 			query.append(stmt);
 			current = current + 1;
-			bytes += line.getBytes().length;
 			
 			if (current >= batchSize) {
 				break;
 			}
 			
 		}
-		
-		reader.close();
 
 		message.setInvocationProperty("query", query);
-		message.setInvocationProperty("bytes", bytes);
 		
 		return message;
 	}
@@ -92,6 +74,6 @@ public class QueryBuilder implements Callable {
 				+ "Column_35_In_Row_0 = VALUES(Column_35_In_Row_0), Column_36_In_Row_0 = VALUES(Column_36_In_Row_0), "
 				+ "Column_37_In_Row_0 = VALUES(Column_37_In_Row_0), Column_38_In_Row_0 = VALUES(Column_38_In_Row_0), "
 				+ "Column_39_In_Row_0 = VALUES(Column_39_In_Row_0), Column_40_In_Row_0 = VALUES(Column_40_In_Row_0);"
-				+ System.getProperty("line.separator");
+				+ BREAK_LINE;
 	}
 }
