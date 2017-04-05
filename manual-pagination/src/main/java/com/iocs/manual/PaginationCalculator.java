@@ -1,6 +1,5 @@
 package com.iocs.manual;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,10 +15,9 @@ public class PaginationCalculator implements Callable {
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
 		MuleMessage message = eventContext.getMessage();
-		Integer batchSize = Integer.parseInt(message.getInvocationProperty("batchSize", "100").toString());
+		Integer batchSize = Integer.parseInt(message.getInvocationProperty("batchSize").toString());
 		InputStream inputStream = message.getPayload(InputStream.class);
-		BufferedInputStream in = new BufferedInputStream(inputStream);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		
 		int lines = (int) reader.lines().count();
 		reader.close();

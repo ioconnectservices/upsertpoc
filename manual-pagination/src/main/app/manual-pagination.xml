@@ -18,26 +18,78 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
     <db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" password="root" database="pocbatch" doc:name="MySQL Configuration"/>
-    <asynchronous-processing-strategy name="asyncProcessingStrategy" maxThreads="50" minThreads="15" doc:name="Asynchronous Processing Strategy"/>
+    <asynchronous-processing-strategy name="asyncProcessingStrategy" maxThreads="25" doc:name="Asynchronous Processing Strategy"/>
     <flow name="buildingQueryFlow">
     	<file:inbound-endpoint name="File" path="/home/victor/pocs/batch/toProcess/input" moveToDirectory="/home/victor/pocs/batch/toProcess/output" responseTimeout="10000" doc:name="File" mimeType="application/csv" pollingFrequency="10000">
             <file:filename-regex-filter pattern=".*csv" caseSensitive="true"/>
         </file:inbound-endpoint>
         <set-variable variableName="newInputStream" value="#[new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(new File(flowVars.originalDirectory, flowVars.originalFilename))))]" doc:name="Create New Stream"/>
-        <set-variable variableName="batchSize" value="#[Integer.parseInt(${batchSize})]" doc:name="Batch Size"/>
+        <set-variable variableName="batchSize" value="200" doc:name="Batch Size"/>
         <logger message="Batch Size: #[flowVars.batchSize]" level="INFO" doc:name="Logger"/>
         <set-variable variableName="pages" value="#[new ArrayList()]" doc:name="Pages Variable"/>
         <component class="com.iocs.manual.PaginationCalculator" doc:name="Pagination Calculator"/>
         <logger message="Pages calculated: #[flowVars.pages.size()]" level="INFO" doc:name="Logger"/>
         <foreach collection="#[flowVars.pages]" doc:name="For Each">
-            <set-variable variableName="query" value="#[new java.lang.StringBuilder()]" doc:name="Query Variable"/>
-            <component class="com.iocs.manual.QueryBuilder" doc:name="Query Builder"/>
-            <set-payload value="#[flowVars.query.toString()]" doc:name="Set Payload"/>
-            <flow-ref name="databaseUpsertFlow" doc:name="databaseUpsertFlow"/>
+        	<set-variable variableName="csvData" value="#[new java.util.LinkedList()]" doc:name="CSV Records Variable"/>
+            <set-variable variableName="parsedFields" value="#[new java.util.LinkedList()]" doc:name="Fields Map Variable"/>
+            <component class="com.iocs.manual.CSVFileReader" doc:name="CSV File Reader"/>
+            <set-payload value="#[flowVars.parsedFields]" doc:name="Set Payload"/>
+            <async processingStrategy="asyncProcessingStrategy" doc:name="Async">
+                <db:insert config-ref="MySQL_Configuration" bulkMode="true" doc:name="Database">
+                    <db:parameterized-query><![CDATA[INSERT INTO superbig 
+VALUES (
+	#[payload.Column_1_In_Row_0], #[payload.Column_2_In_Row_0], #[payload.Column_3_In_Row_0], #[payload.Column_4_In_Row_0], #[payload.Column_5_In_Row_0], 
+	#[payload.Column_6_In_Row_0], #[payload.Column_7_In_Row_0], #[payload.Column_8_In_Row_0], #[payload.Column_9_In_Row_0], #[payload.Column_10_In_Row_0], 
+	#[payload.Column_11_In_Row_0], #[payload.Column_12_In_Row_0], #[payload.Column_13_In_Row_0], #[payload.Column_14_In_Row_0], #[payload.Column_15_In_Row_0], 
+	#[payload.Column_16_In_Row_0], #[payload.Column_17_In_Row_0], #[payload.Column_18_In_Row_0], #[payload.Column_19_In_Row_0], #[payload.Column_20_In_Row_0], 
+	#[payload.Column_21_In_Row_0], #[payload.Column_22_In_Row_0], #[payload.Column_23_In_Row_0], #[payload.Column_24_In_Row_0], #[payload.Column_25_In_Row_0], 
+	#[payload.Column_26_In_Row_0], #[payload.Column_27_In_Row_0], #[payload.Column_28_In_Row_0], #[payload..Column_29_In_Row_0], #[payload.Column_30_In_Row_0], 
+	#[payload.Column_31_In_Row_0], #[payload.Column_32_In_Row_0], #[payload.Column_33_In_Row_0], #[payload.Column_34_In_Row_0], #[payload.Column_35_In_Row_0], 
+	#[payload.Column_36_In_Row_0], #[payload.Column_37_In_Row_0], #[payload.Column_38_In_Row_0], #[payload.Column_39_In_Row_0], #[payload.Column_40_In_Row_0])
+ON DUPLICATE KEY UPDATE 
+	Column_2_In_Row_0 = VALUES(Column_2_In_Row_0),
+	Column_3_In_Row_0 = VALUES(Column_3_In_Row_0), 
+	Column_4_In_Row_0 = VALUES(Column_4_In_Row_0), 
+	Column_5_In_Row_0 = VALUES(Column_5_In_Row_0), 
+	Column_6_In_Row_0 = VALUES(Column_6_In_Row_0), 
+	Column_7_In_Row_0 = VALUES(Column_7_In_Row_0), 
+	Column_8_In_Row_0 = VALUES(Column_8_In_Row_0), 
+	Column_9_In_Row_0 = VALUES(Column_9_In_Row_0), 
+	Column_10_In_Row_0 = VALUES(Column_10_In_Row_0),
+	Column_11_In_Row_0 = VALUES(Column_11_In_Row_0), 
+	Column_12_In_Row_0 = VALUES(Column_12_In_Row_0), 
+	Column_13_In_Row_0 = VALUES(Column_13_In_Row_0), 
+	Column_14_In_Row_0 = VALUES(Column_14_In_Row_0), 
+	Column_15_In_Row_0 = VALUES(Column_15_In_Row_0), 
+	Column_16_In_Row_0 = VALUES(Column_16_In_Row_0), 
+	Column_17_In_Row_0 = VALUES(Column_17_In_Row_0), 
+	Column_18_In_Row_0 = VALUES(Column_18_In_Row_0), 
+	Column_19_In_Row_0 = VALUES(Column_19_In_Row_0), 
+	Column_20_In_Row_0 = VALUES(Column_20_In_Row_0),
+	Column_21_In_Row_0 = VALUES(Column_21_In_Row_0), 
+	Column_22_In_Row_0 = VALUES(Column_22_In_Row_0), 
+	Column_23_In_Row_0 = VALUES(Column_23_In_Row_0), 
+	Column_24_In_Row_0 = VALUES(Column_24_In_Row_0), 
+	Column_25_In_Row_0 = VALUES(Column_25_In_Row_0), 
+	Column_26_In_Row_0 = VALUES(Column_26_In_Row_0), 
+	Column_27_In_Row_0 = VALUES(Column_27_In_Row_0), 
+	Column_28_In_Row_0 = VALUES(Column_28_In_Row_0), 
+	Column_29_In_Row_0 = VALUES(Column_29_In_Row_0), 
+	Column_30_In_Row_0 = VALUES(Column_30_In_Row_0),
+	Column_31_In_Row_0 = VALUES(Column_31_In_Row_0), 
+	Column_32_In_Row_0 = VALUES(Column_32_In_Row_0), 
+	Column_33_In_Row_0 = VALUES(Column_33_In_Row_0), 
+	Column_34_In_Row_0 = VALUES(Column_34_In_Row_0), 
+	Column_35_In_Row_0 = VALUES(Column_35_In_Row_0), 
+	Column_36_In_Row_0 = VALUES(Column_36_In_Row_0), 
+	Column_37_In_Row_0 = VALUES(Column_37_In_Row_0), 
+	Column_38_In_Row_0 = VALUES(Column_38_In_Row_0), 
+	Column_39_In_Row_0 = VALUES(Column_39_In_Row_0), 
+	Column_40_In_Row_0 = VALUES(Column_40_In_Row_0)]]></db:parameterized-query>
+                </db:insert>
+            </async>
         </foreach>
         <logger message="All records were processed" level="INFO" doc:name="Logger"/>
     </flow>
-    <flow name="databaseUpsertFlow" processingStrategy="asyncProcessingStrategy">
-        <db:bulk-execute config-ref="MySQL_Configuration" doc:name="Database"><![CDATA[#[payload]]]></db:bulk-execute>
-    </flow>
+
 </mule>
