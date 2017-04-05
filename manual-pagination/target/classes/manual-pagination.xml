@@ -30,7 +30,6 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
         <component class="com.iocs.manual.PaginationCalculator" doc:name="Pagination Calculator"/>
         <logger message="Pages calculated: #[flowVars.pages.size()]" level="INFO" doc:name="Logger"/>
         <foreach collection="#[flowVars.pages]" doc:name="For Each">
-        	<set-variable variableName="csvData" value="#[new java.util.LinkedList()]" doc:name="CSV Records Variable"/>
             <set-variable variableName="parsedFields" value="#[new java.util.LinkedList()]" doc:name="Fields Map Variable"/>
             <component class="com.iocs.manual.CSVFileReader" doc:name="CSV File Reader"/>
             <set-payload value="#[flowVars.parsedFields]" doc:name="Set Payload"/>

@@ -19,7 +19,6 @@ MuleMessage message = eventContext.getMessage();
 		Integer batchSize = Integer.parseInt(message.getInvocationProperty("batchSize").toString());
 		List<Map<String, String>> parsedFields = message.getInvocationProperty("parsedFields");
 		
-		List<String[]> csvData = message.getInvocationProperty("csvData");
 		int current = 0;
 		String line = null;
 		
@@ -30,7 +29,6 @@ MuleMessage message = eventContext.getMessage();
 				continue;
 			}
 			
-			csvData.add(csvs);
 			buildMap(parsedFields, csvs);
 			
 			if (current >= batchSize) {
@@ -43,8 +41,6 @@ MuleMessage message = eventContext.getMessage();
 		if (line == null) {
 			reader.close();
 		}
-
-		message.setInvocationProperty("csvData", csvData);
 		
 		return message;		
 	}
