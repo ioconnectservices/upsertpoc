@@ -5,3 +5,4 @@ This is an experiment about three different approaches to upsert records from a 
 * Hybrid of the two above.
 
 The samples here depicted use the CSVs files in https://github.com/ioconnectservices/csvs repo
+This is licensed under GNU GPL v3. See details  in https://github.com/ioconnectservices/upsertpoc/blob/master/LICENSE
