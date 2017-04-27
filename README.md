@@ -4,6 +4,8 @@ This is an experiment about three different approaches to upsert records from a 
 * Manual pagination.
 * Hybrid of the two above.
 
+You can find the full article in http://blog.ioconnectservices.com/2017/04/mule-batch-approaches-benchmark.html.
+
 The samples here depicted use the CSVs files in https://github.com/ioconnectservices/csvs repo.
 
 # LICENSE
