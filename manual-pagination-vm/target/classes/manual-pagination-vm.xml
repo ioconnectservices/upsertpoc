@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:jbossts="http://www.mulesoft.org/schema/mule/jbossts" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/jbossts http://www.mulesoft.org/schema/mule/jbossts/current/mule-jbossts.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" password="-shadoW20Bahamut" database="poc_sch" doc:name="MySQL Configuration"/>
+    <asynchronous-processing-strategy name="Asynchronous_Processing_Strategy" maxThreads="30" doc:name="Asynchronous Processing Strategy"/>
+    <vm:connector name="VM" validateConnections="true" doc:name="VM">
+        <vm:queue-profile maxOutstandingMessages="1600">
+            <default-persistent-queue-store/>
+   		</vm:queue-profile>
+    </vm:connector>
+    <flow name="VMPaginationFlow">
+    	<file:inbound-endpoint path="/home/icasillas.iocs/Documents/PoC_Files/input" moveToDirectory="/home/icasillas.iocs/Documents/PoC_Files/processed" responseTimeout="10000" doc:name="File" pollingFrequency="30000">
+            <file:filename-regex-filter pattern=".*csv" caseSensitive="true"/>
+        </file:inbound-endpoint>
+        <component class="poc.manual.example.java.PageNumber" doc:name="CreatePages"/>
+        <foreach collection="#[payload]" counterVariableName="i" doc:name="For Each">
+            <component class="poc.manual.example.java.SendData" doc:name="SendPage"/>
+            <vm:outbound-endpoint exchange-pattern="one-way" path="databasevm" connector-ref="VM" doc:name="VM"/>
+        </foreach>
+        <logger message="Finished" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="VMProcessFlow">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="databasevm" doc:name="VM" >
+        </vm:inbound-endpoint>
+        <async processingStrategy="Asynchronous_Processing_Strategy" doc:name="Async">
+            <db:insert config-ref="MySQL_Configuration" bulkMode="true" doc:name="Database">
+                <db:parameterized-query><![CDATA[INSERT INTO poc_sch.super_big_sample VALUES(#[payload.Column_1_In_Row_0],
+#[payload.Column_2_In_Row_0],
+#[payload.Column_3_In_Row_0],
+#[payload.Column_4_In_Row_0],
+#[payload.Column_5_In_Row_0],
+#[payload.Column_6_In_Row_0],
+#[payload.Column_7_In_Row_0],
+#[payload.Column_8_In_Row_0],
+#[payload.Column_9_In_Row_0],
+#[payload.Column_10_In_Row_0],
+#[payload.Column_11_In_Row_0],
+#[payload.Column_12_In_Row_0],
+#[payload.Column_13_In_Row_0],
+#[payload.Column_14_In_Row_0],
+#[payload.Column_15_In_Row_0],
+#[payload.Column_16_In_Row_0],
+#[payload.Column_17_In_Row_0],
+#[payload.Column_18_In_Row_0],
+#[payload.Column_19_In_Row_0],
+#[payload.Column_20_In_Row_0],
+#[payload.Column_21_In_Row_0],
+#[payload.Column_22_In_Row_0],
+#[payload.Column_23_In_Row_0],
+#[payload.Column_24_In_Row_0],
+#[payload.Column_25_In_Row_0],
+#[payload.Column_26_In_Row_0],
+#[payload.Column_27_In_Row_0],
+#[payload.Column_28_In_Row_0],
+#[payload.Column_29_In_Row_0],
+#[payload.Column_30_In_Row_0],
+#[payload.Column_31_In_Row_0],
+#[payload.Column_32_In_Row_0],
+#[payload.Column_33_In_Row_0],
+#[payload.Column_34_In_Row_0],
+#[payload.Column_35_In_Row_0],
+#[payload.Column_36_In_Row_0],
+#[payload.Column_37_In_Row_0],
+#[payload.Column_38_In_Row_0],
+#[payload.Column_39_In_Row_0],
+#[payload.Column_40_In_Row_0]) 
+
+ON DUPLICATE KEY UPDATE Column_2_In_Row_0 = VALUES(Column_2_In_Row_0),
+Column_3_In_Row_0 = VALUES(Column_3_In_Row_0), 
+Column_4_In_Row_0 = VALUES(Column_4_In_Row_0), 
+Column_5_In_Row_0 = VALUES(Column_5_In_Row_0), 
+Column_6_In_Row_0 = VALUES(Column_6_In_Row_0), 
+Column_7_In_Row_0 = VALUES(Column_7_In_Row_0), 
+Column_8_In_Row_0 = VALUES(Column_8_In_Row_0), 
+Column_9_In_Row_0 = VALUES(Column_9_In_Row_0), 
+Column_10_In_Row_0 = VALUES(Column_10_In_Row_0),
+Column_11_In_Row_0 = VALUES(Column_11_In_Row_0), 
+Column_12_In_Row_0 = VALUES(Column_12_In_Row_0), 
+Column_13_In_Row_0 = VALUES(Column_13_In_Row_0), 
+Column_14_In_Row_0 = VALUES(Column_14_In_Row_0), 
+Column_15_In_Row_0 = VALUES(Column_15_In_Row_0), 
+Column_16_In_Row_0 = VALUES(Column_16_In_Row_0), 
+Column_17_In_Row_0 = VALUES(Column_17_In_Row_0), 
+Column_18_In_Row_0 = VALUES(Column_18_In_Row_0), 
+Column_19_In_Row_0 = VALUES(Column_19_In_Row_0), 
+Column_20_In_Row_0 = VALUES(Column_20_In_Row_0),
+Column_21_In_Row_0 = VALUES(Column_21_In_Row_0), 
+Column_22_In_Row_0 = VALUES(Column_22_In_Row_0), 
+Column_23_In_Row_0 = VALUES(Column_23_In_Row_0), 
+Column_24_In_Row_0 = VALUES(Column_24_In_Row_0), 
+Column_25_In_Row_0 = VALUES(Column_25_In_Row_0), 
+Column_26_In_Row_0 = VALUES(Column_26_In_Row_0), 
+Column_27_In_Row_0 = VALUES(Column_27_In_Row_0), 
+Column_28_In_Row_0 = VALUES(Column_28_In_Row_0), 
+Column_29_In_Row_0 = VALUES(Column_29_In_Row_0), 
+Column_30_In_Row_0 = VALUES(Column_30_In_Row_0),
+Column_31_In_Row_0 = VALUES(Column_31_In_Row_0), 
+Column_32_In_Row_0 = VALUES(Column_32_In_Row_0), 
+Column_33_In_Row_0 = VALUES(Column_33_In_Row_0), 
+Column_34_In_Row_0 = VALUES(Column_34_In_Row_0), 
+Column_35_In_Row_0 = VALUES(Column_35_In_Row_0), 
+Column_36_In_Row_0 = VALUES(Column_36_In_Row_0), 
+Column_37_In_Row_0 = VALUES(Column_37_In_Row_0), 
+Column_38_In_Row_0 = VALUES(Column_38_In_Row_0), 
+Column_39_In_Row_0 = VALUES(Column_39_In_Row_0), 
+Column_40_In_Row_0 = VALUES(Column_40_In_Row_0)]]></db:parameterized-query>
+            </db:insert>
+        </async>
+    </flow>
+</mule>
